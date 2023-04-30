@@ -61,30 +61,32 @@ suppertHistoryStack();
 type HistoryListenCallback = Parameters<typeof routerHistory.listen>[0];
 type BrowserNavigationInfo = Parameters<HistoryListenCallback>[2];
 
-enum BrowserNavigationDirection {
+enum NavigationDirection {
   back = "back",
   forward = "forward",
   unknown = "",
 }
 
-// 存储最后的导航信息，如是否replace、routerHistory.listen的info数据 等。
 type LastNavigationInfo = {
   replace: boolean;
-  browserNavigationInfo: BrowserNavigationInfo | null;
+  lastInfo: BrowserNavigationInfo | null;
+  isFirstNavigation: boolean;
 };
 
 const INITIAL_LAST_NAVIGATION_INFO: LastNavigationInfo = {
   replace: false,
-  browserNavigationInfo: null,
+  lastInfo: null,
+  isFirstNavigation: false,
 };
 const lastNavigationInfo: LastNavigationInfo = { ...INITIAL_LAST_NAVIGATION_INFO };
-function resetLastNavigationInfo() {
+function resetLastInfo() {
   Object.assign(lastNavigationInfo, INITIAL_LAST_NAVIGATION_INFO);
 }
 
 function suppertHistoryStack() {
   const stack: string[] = [];
-  const stackForForward: string[] = [];
+  let position: number = -1;
+  // const stackForForward: string[] = [];
 
   /*window.onpopstate = function(event) {
     // https://developer.mozilla.org/zh-CN/docs/Web/API/Window/popstate_event
@@ -94,8 +96,9 @@ function suppertHistoryStack() {
   routerHistory.listen((to, from, info) => {
     console.debug("🚥 listen: ");
     console.debug("from :>> ", from);
-    console.debug("to :>> ", to);
+    console.debug("to :>> ", to); // TODO: 在afterEach那里校验
     console.debug("info :>> ", info);
+    lastNavigationInfo.lastInfo = info;
   });
 
   const routerHistoryPush = routerHistory.push;
@@ -117,20 +120,39 @@ function suppertHistoryStack() {
     return routerHistoryGo.call(this, ...args);
   };
 
-  router.beforeEach(async (_to, from) => {
+  const removeStartLocationListener = router.beforeEach(async (_to, from) => {
     console.debug("from === START_LOCATION :>> ", from === START_LOCATION);
+    if (from === START_LOCATION) {
+      lastNavigationInfo.isFirstNavigation = true;
+      removeStartLocationListener();
+    }
   });
 
   router.afterEach(async (to, _from, failure) => {
     if (failure) return;
 
-    console.debug("lastNavigationInfo.replace :>> ", lastNavigationInfo.replace);
-    if (lastNavigationInfo.replace) {
-      stack.pop();
+    // console.debug("lastNavigationInfo.replace :>> ", lastNavigationInfo.replace);
+    // console.debug("lastNavigationInfo.isFirstNavigation :>> ", lastNavigationInfo.isFirstNavigation);
+    if (lastNavigationInfo.replace && !lastNavigationInfo.isFirstNavigation) {
+      console.debug("🚥 before pop: stack :>> ", JSON.stringify(stack, null, 2));
+      console.debug("🚥 stack.pop() :>> ", stack.pop());
+      position--;
     }
-    stack.push(to.fullPath);
 
-    resetLastNavigationInfo();
-    console.debug("🚥 stack :>> ", JSON.stringify(stack, null, 2), stack);
+    if (
+      lastNavigationInfo?.lastInfo?.direction === NavigationDirection.back ||
+      lastNavigationInfo?.lastInfo?.direction === NavigationDirection.forward
+    ) {
+      position += lastNavigationInfo.lastInfo.delta;
+    } else {
+      stack.push(to.fullPath);
+      position++;
+    }
+
+    const stackWithPosition = stack.map((item, index) => (position === index ? `${item}📍` : item));
+
+    resetLastInfo();
+    console.debug("🚥 stack :>> ", JSON.stringify(stackWithPosition, null, 2));
+    console.debug("   position :>> ", position);
   });
 }

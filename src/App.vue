@@ -19,16 +19,27 @@ function clickReload() {
 }
 
 async function click1() {
+  console.clear();
   console.debug("⚙️ 预期结果： ", ["/", "/a", "/b"]);
   await router.push({ path: "/a" });
   await router.push({ path: "/b" });
 }
 
 async function click2() {
+  console.clear();
   console.debug("⚙️ 预期结果： ", ["/", "/a", "/c"]);
   await router.push({ path: "/a" });
   await router.push({ path: "/b" });
   await router.push({ path: "/c", replace: true });
+}
+async function click3() {
+  console.clear();
+  console.debug("⚙️ 预期结果： ", ["/", "/a📍", "/b", "/c", "/d"]);
+  await router.push({ path: "/a" });
+  await router.push({ path: "/b" });
+  await router.push({ path: "/c" });
+  await router.push({ path: "/d" });
+  router.go(-3);
 }
 console.debug("🚀 App created");
 
@@ -40,6 +51,8 @@ onMounted(() => {});
     <button @click="clickReload">Rload</button>
     <button @click="click1">A -> B</button>
     <button @click="click2">A -> (B) -> C</button>
+    <button @click="click3">A -> B -> C -> D -> go(-3)</button>
+    <button @click="router.go(2)">go(2)</button>
   </div>
 
   <pre>currentLocation: {{ currentLocation }}</pre>
@@ -50,7 +63,7 @@ onMounted(() => {});
   </RouterView>
 </template>
 
-<style>
+<style scoped>
 pre {
   background-color: #eee;
   padding: 10px;
@@ -60,5 +73,8 @@ pre {
   display: flex;
   flex-direction: column;
   gap: 10px;
+}
+button {
+  text-align: left;
 }
 </style>
