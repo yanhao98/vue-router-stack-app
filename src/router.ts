@@ -88,10 +88,10 @@ function suppertHistoryStack() {
   let position: number = -1;
   // const stackForForward: string[] = [];
 
-  /*window.onpopstate = function(event) {
+  /* window.addEventListener("popstate", (event) => {
     // https://developer.mozilla.org/zh-CN/docs/Web/API/Window/popstate_event
-    console.debug("🚥 onpopstate: event :>> ", event);
-  };*/
+    console.debug("🚥 popstate#1: event :>> ", event);
+  }); */
 
   routerHistory.listen((to, from, info) => {
     console.debug("🚥 listen: ");
@@ -133,13 +133,10 @@ function suppertHistoryStack() {
 
     // console.debug("lastNavigationInfo.replace :>> ", lastNavigationInfo.replace);
     // console.debug("lastNavigationInfo.isFirstNavigation :>> ", lastNavigationInfo.isFirstNavigation);
-    if (lastNavigationInfo.replace && !lastNavigationInfo.isFirstNavigation) {
-      console.debug("🚥 before pop: stack :>> ", JSON.stringify(stack, null, 2));
-      console.debug("🚥 stack.pop() :>> ", stack.pop());
-      position--;
-    }
 
-    if (
+    if (lastNavigationInfo.replace && !lastNavigationInfo.isFirstNavigation) {
+      stack[position] = to.fullPath;
+    } else if (
       lastNavigationInfo?.lastInfo?.direction === NavigationDirection.back ||
       lastNavigationInfo?.lastInfo?.direction === NavigationDirection.forward
     ) {

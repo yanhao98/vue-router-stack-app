@@ -32,6 +32,7 @@ async function click2() {
   await router.push({ path: "/b" });
   await router.push({ path: "/c", replace: true });
 }
+
 async function click3() {
   console.clear();
   console.debug("⚙️ 预期结果： ", ["/", "/a📍", "/b", "/c", "/d"]);
@@ -41,6 +42,24 @@ async function click3() {
   await router.push({ path: "/d" });
   router.go(-3);
 }
+
+async function click4() {
+  console.clear();
+  console.debug("⚙️ 预期结果： ", ["/", "/a", "/z📍", "/c"]);
+  await router.push({ path: "/a" });
+  await router.push({ path: "/b" });
+  await router.push({ path: "/c" });
+  router.go(-1);
+
+  function popStateListener() {
+    console.debug('back执行完成, 替换"/b"为"/z"');
+    router.replace({ path: "/z" });
+    window.removeEventListener("popstate", popStateListener);
+  }
+
+  window.addEventListener("popstate", popStateListener);
+}
+
 console.debug("🚀 App created");
 
 onMounted(() => {});
@@ -53,6 +72,7 @@ onMounted(() => {});
     <button @click="click2">A -> (B) -> C</button>
     <button @click="click3">A -> B -> C -> D -> go(-3)</button>
     <button @click="router.go(2)">go(2)</button>
+    <button @click="click4">A -> B -> C -> go(-1) -> (Z)</button>
   </div>
 
   <pre>currentLocation: {{ currentLocation }}</pre>
