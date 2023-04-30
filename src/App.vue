@@ -1,26 +1,34 @@
 <script setup lang="ts">
 import { computed } from "vue";
-import { useRoute } from "vue-router";
+import { RouteLocationNormalizedLoaded, useRoute, useRouter } from "vue-router";
 
-const route = useRoute()
+const route = useRoute();
+const router = useRouter();
 const currentLocation = computed(() => {
-  const { matched, ...rest } = route
-  return rest
-})
+  return removeMatched(route);
+});
+
+function removeMatched(route: RouteLocationNormalizedLoaded): Omit<RouteLocationNormalizedLoaded, "matched"> {
+  const { matched, ...rest } = route;
+  return rest;
+}
+
+async function clickA() {
+  await router.push({ path: "/a" });
+  await router.push({ path: "/b" });
+  await router.push({ path: "/c" });
+}
 </script>
 
 <template>
-    <pre>currentLocation:
-{{ currentLocation }}</pre>
+  <div>
+    <button @click="clickA">Test 1</button>
+  </div>
 
-  <RouterView v-slot="{ Component, route }">
-    <pre>route:
-{{
-        function () {
-          const { matched, ...rest } = route
-          return rest
-        }()
-      }}</pre>
+  <pre>currentLocation: {{ currentLocation }}</pre>
+
+  <RouterView v-slot="{ Component, route: routeInSlot }">
+    <pre>route: {{ removeMatched(routeInSlot) }}</pre>
     <component :is="Component" :key="route.fullPath" />
   </RouterView>
 </template>
