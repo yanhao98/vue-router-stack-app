@@ -11,10 +11,9 @@ export const router = createRouter({
       name: 'NotFound',
       component: defineComponent({
         setup: () => {
-          // const route = useRoute();
-          // console.debug("route :>> ", route);
+          console.debug("🎨 Route Component's setup function is called.");
           return () => {
-            return '404';
+            return 'Route Component'
           };
         },
       })
