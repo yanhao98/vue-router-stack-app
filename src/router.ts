@@ -1,4 +1,4 @@
-import { createRouter, createWebHistory, RouteLocationNormalized, START_LOCATION } from "vue-router";
+import { createRouter, createWebHistory, START_LOCATION } from "vue-router";
 import { defineComponent } from "vue";
 
 export const routerHistory = createWebHistory();
@@ -59,30 +59,43 @@ suppertHistoryStack();
 
 // historyListenFn的形参类型
 type HistoryListenCallback = Parameters<typeof routerHistory.listen>[0];
-type NavigationInfo = Parameters<HistoryListenCallback>[2];
+type BrowserNavigationInfo = Parameters<HistoryListenCallback>[2];
 
-enum NavigationDirection {
+enum BrowserNavigationDirection {
   back = "back",
   forward = "forward",
   unknown = "",
 }
 
+// 存储最后的导航信息，如是否replace、routerHistory.listen的info数据 等。
+type LastNavigationInfo = {
+  replace: boolean;
+  browserNavigationInfo: BrowserNavigationInfo | null;
+};
+
+const INITIAL_LAST_NAVIGATION_INFO: LastNavigationInfo = {
+  replace: false,
+  browserNavigationInfo: null,
+};
+const lastNavigationInfo: LastNavigationInfo = { ...INITIAL_LAST_NAVIGATION_INFO };
+function resetLastNavigationInfo() {
+  Object.assign(lastNavigationInfo, INITIAL_LAST_NAVIGATION_INFO);
+}
+
 function suppertHistoryStack() {
-  let lastNavigationInfo: NavigationInfo | null = null;
-  let lastIsReplace = false;
-  let lastFrom: RouteLocationNormalized | null = null;
-  // 暂时没有考虑forward的情况。需要记录一个完整的历史记录。再加一个position记录当前位置。
   const stack: string[] = [];
+  const stackForForward: string[] = [];
+
+  /*window.onpopstate = function(event) {
+    // https://developer.mozilla.org/zh-CN/docs/Web/API/Window/popstate_event
+    console.debug("🚥 onpopstate: event :>> ", event);
+  };*/
 
   routerHistory.listen((to, from, info) => {
     console.debug("🚥 listen: ");
     console.debug("from :>> ", from);
     console.debug("to :>> ", to);
     console.debug("info :>> ", info);
-    // 目前测试结果：只要是返回就会进这个回调，无论是外部触发的返回还是router触发的。
-    // if (from === stack[stack.length - 1]) {
-    lastNavigationInfo = info;
-    // }
   });
 
   const routerHistoryPush = routerHistory.push;
@@ -94,7 +107,7 @@ function suppertHistoryStack() {
   const routerHistoryReplace = routerHistory.replace;
   routerHistory.replace = function (...args) {
     console.debug("🚥 replace: args :>> ", args);
-    lastIsReplace = true;
+    lastNavigationInfo.replace = true;
     return routerHistoryReplace.call(this, ...args);
   };
 
@@ -105,34 +118,19 @@ function suppertHistoryStack() {
   };
 
   router.beforeEach(async (_to, from) => {
-    // console.debug("from === START_LOCATION :>> ", from === START_LOCATION);
-    lastFrom = from;
+    console.debug("from === START_LOCATION :>> ", from === START_LOCATION);
   });
 
   router.afterEach(async (to, _from, failure) => {
-    if (failure) {
-      lastNavigationInfo = null;
-      lastIsReplace = false;
-      return;
-    }
+    if (failure) return;
 
-    if (lastNavigationInfo?.direction === NavigationDirection.forward && Math.abs(lastNavigationInfo.delta) > 1) {
-      // 应该：正常的用户操作都是一个一个的页面跳转，不会出现forward的情况。
-      console.warn("🚥 forward: 出现了forward, 这种情况暂时不支持。");
+    console.debug("lastNavigationInfo.replace :>> ", lastNavigationInfo.replace);
+    if (lastNavigationInfo.replace) {
+      stack.pop();
     }
+    stack.push(to.fullPath);
 
-    if (lastNavigationInfo?.direction === NavigationDirection.back) {
-      const popLength = Math.abs(lastNavigationInfo.delta);
-      stack.splice(-popLength);
-    } else if (lastIsReplace && lastFrom !== START_LOCATION) {
-      stack[stack.length - 1] = to.fullPath;
-    } else {
-      stack.push(to.fullPath);
-    }
-
+    resetLastNavigationInfo();
     console.debug("🚥 stack :>> ", JSON.stringify(stack, null, 2), stack);
-    lastNavigationInfo = null;
-    lastIsReplace = false;
-    lastFrom = null;
   });
 }

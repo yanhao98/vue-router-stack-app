@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed, onMounted } from "vue";
 import { RouteLocationNormalizedLoaded, useRoute, useRouter } from "vue-router";
 
 const route = useRoute();
@@ -13,16 +13,33 @@ function removeMatched(route: RouteLocationNormalizedLoaded): Omit<RouteLocation
   return rest;
 }
 
-async function clickA() {
+function clickReload() {
+  window.location.href = "/";
+  console.clear();
+}
+
+async function click1() {
+  console.debug("⚙️ 预期结果： ", ["/", "/a", "/b"]);
   await router.push({ path: "/a" });
   await router.push({ path: "/b" });
-  await router.push({ path: "/c" });
 }
+
+async function click2() {
+  console.debug("⚙️ 预期结果： ", ["/", "/a", "/c"]);
+  await router.push({ path: "/a" });
+  await router.push({ path: "/b" });
+  await router.push({ path: "/c", replace: true });
+}
+console.debug("🚀 App created");
+
+onMounted(() => {});
 </script>
 
 <template>
-  <div>
-    <button @click="clickA">Test 1</button>
+  <div class="buttons">
+    <button @click="clickReload">Rload</button>
+    <button @click="click1">A -> B</button>
+    <button @click="click2">A -> (B) -> C</button>
   </div>
 
   <pre>currentLocation: {{ currentLocation }}</pre>
@@ -38,5 +55,10 @@ pre {
   background-color: #eee;
   padding: 10px;
   border-radius: 5px;
+}
+.buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 </style>
