@@ -148,7 +148,7 @@ function suppertHistoryStack() {
     }
 
     // 这里是因为如果先back，再通过浏览器刷新了，那么position和stack就对不上了。暂时先这样处理。
-
+    // 考虑用sessionStorage缓存可不可以？
     stack[position] = to.fullPath;
 
     const stackWithPosition = stack.map((item, index) => (position === index ? `${item}📍` : item));
@@ -160,3 +160,7 @@ function suppertHistoryStack() {
 }
 
 // window.addEventListener('beforeunload'
+
+// 写sessionStorage测试
+console.debug("sessionStorage :>> ", JSON.stringify(sessionStorage, null, 2), sessionStorage);
+sessionStorage.setItem("test", "test");
