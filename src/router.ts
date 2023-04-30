@@ -142,9 +142,14 @@ function suppertHistoryStack() {
     ) {
       position += lastNavigationInfo.lastInfo.delta;
     } else {
+      stack.splice(position + 1);
       stack.push(to.fullPath);
       position++;
     }
+
+    // 这里是因为如果先back，再通过浏览器刷新了，那么position和stack就对不上了。暂时先这样处理。
+
+    stack[position] = to.fullPath;
 
     const stackWithPosition = stack.map((item, index) => (position === index ? `${item}📍` : item));
 
@@ -153,3 +158,5 @@ function suppertHistoryStack() {
     console.debug("   position :>> ", position);
   });
 }
+
+// window.addEventListener('beforeunload'

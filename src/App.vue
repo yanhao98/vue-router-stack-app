@@ -45,15 +45,15 @@ async function click3() {
 
 async function click4() {
   console.clear();
-  console.debug("⚙️ 预期结果： ", ["/", "/a", "/z📍", "/c"]);
+  console.debug("⚙️ 预期结果： ", ["/", "/a", "/d📍", "/c"]);
   await router.push({ path: "/a" });
   await router.push({ path: "/b" });
   await router.push({ path: "/c" });
   router.go(-1);
 
   function popStateListener() {
-    console.debug('back执行完成, 替换"/b"为"/z"');
-    router.replace({ path: "/z" });
+    console.debug('back执行完成, 替换"/b"为"/d"');
+    router.replace({ path: "/d" });
     window.removeEventListener("popstate", popStateListener);
   }
 
@@ -72,7 +72,8 @@ onMounted(() => {});
     <button @click="click2">A -> (B) -> C</button>
     <button @click="click3">A -> B -> C -> D -> go(-3)</button>
     <button @click="router.go(2)">go(2)</button>
-    <button @click="click4">A -> B -> C -> go(-1) -> (Z)</button>
+    <button @click="click4">A -> B -> C -> go(-1) -> (D)</button>
+    <button @click="router.push('/z')">push('/z')</button>
   </div>
 
   <pre>currentLocation: {{ currentLocation }}</pre>
