@@ -164,3 +164,13 @@ function suppertHistoryStack() {
 // 写sessionStorage测试
 console.debug("sessionStorage :>> ", JSON.stringify(sessionStorage, null, 2), sessionStorage);
 sessionStorage.setItem("test", "test");
+
+window.addEventListener(
+  "beforeunload",
+  function (e) {
+    console.debug("🚥 beforeunload, e :>> ", e);
+  },
+  {
+    passive: true,
+  }
+);
