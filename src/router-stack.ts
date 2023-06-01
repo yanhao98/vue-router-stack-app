@@ -1,4 +1,4 @@
-import { Router, START_LOCATION } from "vue-router";
+import { type Router, START_LOCATION } from "vue-router";
 const stack: string[] = [];
 let position: number = -1;
 

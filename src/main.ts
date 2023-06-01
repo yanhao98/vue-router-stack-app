@@ -1,8 +1,7 @@
-import { ComponentPublicInstance, createApp } from "vue";
+import { type ComponentPublicInstance, createApp } from "vue";
 import "./style.css";
-import { router, routerHistory } from "./router.ts";
+import { router, routerHistory } from "./router";
 import App from "./App.vue";
-
 
 const app = createApp(App);
 
