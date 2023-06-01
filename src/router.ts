@@ -56,12 +56,31 @@ router.afterEach(async (to, from, failure) => {
 
 configRouterStack(router);
 
+// ================================================================================
+// 判断刷新还是关闭。
+// https://www.jianshu.com/p/ed6010ab868e/
 window.addEventListener(
   "beforeunload",
   function (e) {
+    // Cancel the event as stated by the standard.
+    e.preventDefault();
+    // Chrome requires returnValue to be set.
+    e.returnValue = "";
+
     console.debug("🚥 beforeunload, e :>> ", e);
+    // sleep(3000);
   },
   {
     passive: true,
   }
 );
+
+// 睡眠
+function sleep(numberMillis: number) {
+  var now = new Date();
+  var exitTime = now.getTime() + numberMillis;
+  while (true) {
+    now = new Date();
+    if (now.getTime() > exitTime) return;
+  }
+}
